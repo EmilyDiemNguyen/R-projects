@@ -1,0 +1,112 @@
+---
+
+---
+
+```{r}
+#title: "R Notebook"
+#output:
+#  html_document:
+#    df_print: paged
+#Name: Thi Ngoc Diem Nguyen
+#ID: 0778061
+
+#Exercise 1
+45 + 12^2 / 5
+27 %% 12
+14 %/% 6
+
+#Exercise 2
+9 %% 2
+9 %/% 2
+#Modulo operation gives the remainder while integer division provides integer result of the division. the results are the same as when we do long division.
+
+#Exercise 3
+typeof(1.9)
+typeof(5)
+typeof(TRUE)
+typeof(23L)
+typeof("hello")
+
+#Exercise 4
+her_var <- 109.8
+her_var
+
+#Exercise 5
+vec_num <- c(2.1, 6, 3.7)
+vec_num
+typeof(vec_num)
+
+vec_int <- c(5L, -4L, 8L)
+vec_int
+typeof(vec_int)
+
+vec_chr <- c("hello", "goodbye", "27", "TRUE")
+vec_chr
+typeof(vec_chr)
+
+vec_lgl <- c(TRUE, FALSE, FALSE)
+vec_lgl
+typeof(vec_lgl)
+
+series <- 1:9
+series
+
+sqnce <- seq(from = 1, to = 7, by = 2)
+sqnce
+
+#Exercise 6
+vec_test <- c(4.5, FALSE, "NO")
+typeof(vec_test)
+# This vector has many types of value: numeric, logical and character. Then process coercion happens, coerces different data types into the best single data type that R can handle, which is character.
+
+#Exercise 7
+vec_1 <- c(1, 2, 3)
+vec_2 <- c(4L, 5L, 6L)
+vec_3 <- c(TRUE, FALSE, TRUE)
+vec_4 <- c("hello", "goodbye", "thankyou")
+vec_tot <- c(vec_1, vec_2, vec_3, vec_4)
+vec_tot
+typeof(vec_tot)
+# when we combine vectors of different type, coercion will happen, in this case, the total vector will coerce different data types into the best single data type that R can handle, which is character.
+
+#Exercise 8
+length(vec_tot)
+# I think this function can show the length of the vector. in this case, there are 12 values in the vec_tot. 
+
+#Exercise 9
+Vec_2_by_2 <- c(1, 2, 3, 4)
+Vec_2_by_2
+m2 <- matrix(Vec_2_by_2, nrow = 2, ncol = 2)
+m2
+dim(m2)
+
+#Exercise 10
+vec_mat <- c(1, 2, 3, 4, 5, 6, 7, 8, 9)
+m <- matrix(vec_mat, nrow = 3, ncol = 3)
+m
+m[3, 1]
+
+#Exercise 11
+m[3, ]
+m[ , 1]
+m[2:3, 2:3]
+
+#Exercise 12
+dat <- data.frame(name = c('Joe', 'Karen', 'Daniel'), 
+                  age = c(34, 28, 46), 
+                  height = c(174, 182, 190), 
+                  stringsAsFactors = FALSE)
+dat
+dim(dat)
+
+#Exercise 13
+str(dat)
+# this structure function provides the numbers of variables, the numbers of observations of each variable and the type of each variable. It also lists variables and observations.
+
+#Exercise 14
+educ <- factor(c(2, 3, 4, 1), levels = c(1, 2, 3, 4), labels = c("elementary school", "secondary school", "post-secondary school", "graduate school"), ordered = TRUE)
+educ
+
+
+```
+
