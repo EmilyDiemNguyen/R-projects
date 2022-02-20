@@ -1,0 +1,173 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+Name: Thi Ngoc Diem Nguyen
+Student ID: 0778061
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+##Exercise 1:
+
+Load the tidyverse package.
+
+```{r}
+library(tidyverse)
+```
+
+##Exercise 2:
+
+Run the following code and read the output
+
+When we run this code, we see that we get an error: the x and y aesthetic mappings for geom_smooth() are required but we did not supply them. To fix this, we have to provide the x and y aesthetic mappings for geom_smooth().
+
+##Exercise 3:
+
+Run the following code
+
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  geom_smooth(mapping = aes(x = displ, y = hwy))
+```
+
+##Exercise 4:
+
+Run the following code and compare the output to that of Exercise 3
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_point() +
+  geom_smooth()
+```
+
+This code delivers same result with the code in exercise 3. 
+
+Doing by this way can reduce typing, which makes the code clearer and reduces the chances of making errors.
+
+##Exercise 5:
+
+Run the following code
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_point(mapping = aes(shape = fl)) +
+  geom_smooth(mapping = aes(colour = drv))
+```
+
+```{r}
+ggplot(mapping = aes(x = displ, y = hwy)) + 
+  geom_point(data = mpg)
+```
+
+##Exercise 6:
+
+Run the two code chunks below and compare the output
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_point()
+```
+
+```{r}
+ggplot(mapping = aes(x = displ, y = hwy), data = mpg) + 
+  geom_point()
+```
+
+In both code chunks above, we get the same result even the positions of data and mapping are switched. We have provided the same arguments to the plotting function. "gglot" knows which argument is for the data and which is for the aethetic mapping because we have used the names for these arguments "data = " and "mapping = ".
+
+##Exercise 7:
+
+Use ?ggplot to confirm that data = and mapping = is part of the definition of the ggplot function.
+
+```{r}
+?ggplot
+```
+
+data = and mapping = is part of the definition of the ggplot function.
+
+##Exercise 8:
+
+Run the following code
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy)) + 
+  geom_point()
+```
+
+Instead of specifying the arguments by name, we can tell ggplot which is which by the position of the arguments. As you’ll have seen in the documentation for the ggplot function, it expects to see the data first and the aesthetic mapping second.
+
+##Exercise 9:
+
+Take this one step further and use position to specify the arguments of the aes() function to reproduce the plot in Exercise 8
+
+```{r}
+ggplot(mpg, aes(displ, hwy)) + 
+  geom_point()
+```
+
+This code is shorten but gives same result.
+
+##Exercise 10:
+
+Not all arguments can be set by position. For these arguments, you must name them. Use ?aes to find which can be set by position for aesthetic mappings.
+
+```{r}
+?aes
+```
+
+x and y
+
+##Exercise 11:
+
+Create similar plots but this time map size to cty in the first plot and set size = 5 in the second. (Keep the same mappings for x and y as above.)
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, size = cty))
+```
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy), size = 5)
+```
+
+##Exercise 12:
+
+Try setting the attributes for both size and colour at the same time
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy), size = 2, colour = 'pink')
+```
+
+##Exercise 13:
+
+Add the following attributes to the plot from Exercise 3: shape = 24, colour = "blue", and fill = "red"
+
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy), shape = 24, colour = "blue", fill = "red") +
+  geom_smooth(mapping = aes(x = displ, y = hwy))
+```
+
+##Exercise 14:
+
+What is wrong with this code? Why are the points not blue?
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, color = "blue"))
+```
+
+In this code, "blue" is a new variable, not a attribute so the blue colour does not appear in the plot. If we wants the blue shown in the plot, we need to put color = "blue" outside of the bracket aes().
