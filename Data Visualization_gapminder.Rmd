@@ -1,0 +1,272 @@
+---
+title: "Data Visualization: Project 1 "
+output:
+  html_document:
+    highlight: pygments
+    theme: cerulean
+  pdf_document: default
+  Name: THI NGOC DIEM NGUYEN
+  Student ID: 0778061
+---
+
+## Introduction
+
+In this practice file you will gain more experience and familiarity with plotting using the *ggplot2* package. We will start with a basic scatter plot and then build up a more complex plot step by step. When we are done you should have learned how to:
+
+- get an initial look at a new data set
+- map aesthetics in both the `ggplot()` and the *geom* layer
+- add a second *geom* layer 
+- modify *attributes* of each layer
+- label the axes and title your plot
+- change the title of the legend
+- apply a theme
+
+
+
+## Install a New Package
+
+```{r eval=FALSE}
+install.packages('gridExtra')
+```
+
+## Load Packages
+
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+library(gapminder)
+```
+
+If you get an error that says *...there is no package called 'gapminder'*, you need to install the package. To do so, open up the console in RStudio and type `install.packages("gapminder")` 
+at the prompt. After the package is installed, rerun the above code. 
+
+## Take a Look at the Data
+
+1. How many rows/observations of data are there? How many columns/variables of data are there?
+
+```{r}
+gapminder
+```
+
+There are 1,704 rows/observations and 6 columns/variables of data "gapminder".
+
+2. How many numeric variables are there? Name them all.
+
+```{r}
+?gapminder
+```
+
+```{r}
+str(gapminder)
+```
+
+There are 4 numeric variable in this data:
+- lifeExp: life expectancy at birth, in years
+- gdpPercap: GDP per capita (US$, inflation-adjusted)
+In which there are 2 integer variable in this data:
+- year: ranges from 1952 to 2007 in increments of 5 years
+- pop: population
+
+3. How many categorical variables are there? Name them all.
+
+There are 2 categorical variables
+- country: factor with 142 levels
+- continent: factor with 5 levels
+
+4. Use `summary()` to get a statistical view of the data. 
+
+```{r}
+summary(gapminder)
+```
+
+## Select Data
+
+5. Run the following code to see a list of countries in the data set, ordered alphabetically.
+
+```{r eval=FALSE}
+sort(unique(gapminder$country))
+```
+
+6. Replace *Ireland* in the following code chunk with another country of your choosing and run it.(We will learn about `filter()` in the next chapter of the course textbook, so don't worry about how it works at the moment.)  
+
+```{r}
+country <- gapminder %>% filter(country == "Vietnam")
+```
+
+You now have a data frame of values for one particular country. 
+
+7. Take a look at the data stored in `country`. 
+
+```{r}
+country
+```
+
+8. List the following for the variables in your data frame: variable name, variable type (numeric, categorical), data type the computer is using to store each variable (integer, character, etc), and note if there is a contradiction.
+
+```{r}
+glimpse(country)
+```
+
+Details as below:
+- 'country' is stored as factor type and this is a categorical variable, so that's ok
+- 'continent' is stored as factor type and this is a categorical variable, so that's ok 
+- 'year' is stored as integer type and this is a numeric variable, so that's ok
+- 'lifeExp' is stored as double type and this is a numeric variable, so that's ok
+- 'pop' is stored as integer type and this is a numeric variable, so that's ok
+- 'gdpPercap' is stored as double type and this is a numeric variable, so that's ok
+
+## Plotting Practice
+
+In this section, you will be building up a more complex plot from a basic one. You will thus be adding code to your initial plot, which means you can copy and paste your initial code, then make a change; then copy and paste your code, then make a change; etc.  
+
+9. Create a scatter plot mapping `x` to the `year` variable and `y` to `lifeExp`. Be sure to do this in the `ggplot()` layer.  
+
+```{r}
+ggplot(data = country, aes(x=year, y=lifeExp))
+```
+
+10. Now map the `size` aesthetic of `geom_point()` to `gdpPercap`. 
+
+```{r}
+ggplot(data = country, aes(x=year, y=lifeExp)) + geom_point(aes(size=gdpPercap))
+```
+
+11. Add a line geom to your plot. (Check out the [cheat sheet](https://www.rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf) if you don't know how.)
+
+```{r}
+ggplot(data = country, aes(x=year, y=lifeExp)) + geom_point(aes(size=gdpPercap)) + geom_line()
+```
+
+12. Change the colour of the line geom to 'blue'. That is, change the `colour` *attribute* of the line geom. Also, set the `size` attribute to 0.8.
+
+```{r}
+ggplot(data = country, aes(x=year, y=lifeExp)) + geom_point(aes(size=gdpPercap)) + geom_line(colour = 'blue', size = 0.8)
+```
+
+13. Change the shape attribute of the point geom to a fillable circle (see [Chapter 3](http://r4ds.had.co.nz/data-visualisation.html#aesthetic-mappings)) and set the `colour` attribute to 'blue' and the `fill` attribute to 'red'.
+
+```{r}
+ggplot(data = country, aes(x=year, y=lifeExp)) + geom_point(aes(size = gdpPercap), shape = 21, color = "blue", fill = "red") + geom_line(colour = 'blue', size = 0.8) 
+```
+
+14. Now change the order of the point geom and the line geom. 
+
+```{r}
+ggplot(data = country, aes(x=year, y=lifeExp)) + geom_line(colour = 'blue', size = 0.8) + geom_point(aes(size = gdpPercap), shape = 21, color = "blue", fill = "red") 
+```
+
+## Labeling
+
+We now want to learn how to modify the labeling of our plots. Normally we don't want any 
+abbreviations in our labels; we would also want to note any units of measure in our labels. 
+
+15. Take a look at the documentation for `labs()`. 
+
+```{r}
+?labs()
+```
+
+16. Add appropriate labels to the x- and y-axes using `labs()`. 
+
+```{r}
+ggplot(data = country, aes(x=year, y=lifeExp)) + geom_line(colour = 'blue', size = 0.8) + geom_point(aes(size = gdpPercap), shape = 21, color = "blue", fill = "red") + labs(x="Year", y="Life expectancy at birth")
+```
+
+17. Add an appropriate title to your plot using `ggtitle()`. 
+
+```{r}
+ggplot(data = country, aes(x=year, y=lifeExp)) + geom_line(colour = 'blue', size = 0.8) + geom_point(aes(size = gdpPercap), shape = 21, color = "blue", fill = "red") + labs(x="Year", y="Life expectancy at birth") + ggtitle("Life Quality of Vietnam from 1952 to 2007 ")
+```
+
+Changing the look and feel of the legend gets a bit more complicated. The `guides()` function allows us to make changes to each of the mappings in our plot. We have mapped the `x` and `y` aesthetics to `year` and `lifeExp`, respectively. The "legends" for these mappings are the `x` and `y` scales. We have also mapped `size` to the variable `gdpPercap`. The *scale* for this mapping shows up in the legend, with the title defaulting to the name of the variable (here that is `gdpPercap`). 
+
+We will use `guides(size = guide_legend(title = "ENTER AN APPROPRIATE TITLE"))` to change the title of the legend. Note that we have identified the `size` scale inside the `guides()` function. 
+
+```{r}
+ggplot(data = country, aes(x=year, y=lifeExp)) + geom_line(colour = 'blue', size = 0.8) + geom_point(aes(size = gdpPercap), shape = 21, color = "blue", fill = "red") + labs(x="Year", y="Life expectancy at birth") + ggtitle("Life Quality of Vietnam from 1952 to 2007 ") + guides(size = guide_legend(title = "GDP per capita in USD"))
+```
+
+
+18. Add the above code (with an appropriate title) to the code you had before. 
+
+```{r}
+ggplot(data = country, aes(x=year, y=lifeExp)) + geom_line(colour = 'blue', size = 0.8) + geom_point(aes(size = gdpPercap), shape = 21, color = "blue", fill = "red") + labs(x="Year", y="Life expectancy at birth") + ggtitle("Life Quality of Vietnam from 1952 to 2007 ") + guides(size = guide_legend(title = "GDP per capita in USD"))
+```
+
+
+## Theme
+
+Now take a look at the **complete themes** listed at https://ggplot2.tidyverse.org/reference/index.html#section-themes. 
+
+19. Try a few out and choose the one you prefer. 
+
+```{r}
+ggplot(data = country, aes(x=year, y=lifeExp)) + geom_line(colour = 'blue', size = 0.8) + geom_point(aes(size = gdpPercap), shape = 21, color = "blue", fill = "red") + labs(x="Year", y="Life expectancy at birth") + ggtitle("Life Quality of Vietnam from 1952 to 2007 ") + guides(size = guide_legend(title = "GDP per capita in USD")) + theme_classic()
+```
+
+```{r}
+ggplot(data = country, aes(x=year, y=lifeExp)) + geom_line(colour = 'blue', size = 0.8) + geom_point(aes(size = gdpPercap), shape = 21, color = "blue", fill = "red") + labs(x="Year", y="Life expectancy at birth") + ggtitle("Life Quality of Vietnam from 1952 to 2007 ") + guides(size = guide_legend(title = "GDP per capita in USD")) + theme_light()
+```
+
+```{r}
+ggplot(data = country, aes(x=year, y=lifeExp)) + geom_line(colour = 'blue', size = 0.8) + geom_point(aes(size = gdpPercap), shape = 21, color = "blue", fill = "red") + labs(x="Year", y="Life expectancy at birth") + ggtitle("Life Quality of Vietnam from 1952 to 2007 ") + guides(size = guide_legend(title = "GDP per capita in USD")) + theme_gray()
+```
+
+
+## Comparison
+
+We can now see the change in life expectancy over time for a particular country; but how does that compare to the life expectancy for all the countries in the data? First let's calculate the average life expectancy for the last year (2007) for which we have data. 
+
+```{r}
+lifeExp_avg <- gapminder %>% group_by(year) %>% 
+  summarize(Avg_lifeExp = mean(lifeExp))
+
+avg_2007 <- lifeExp_avg[[12, 2]]
+
+print(paste0("Average life expectancy for 2007 is ", round(avg_2007, 0)))
+```
+
+20. Now let's add these to our plot using `geom_hline()`. Add this geom to your plot and set the `yintercept` argument equal to `avg_2007`. Also, set the `linetype` argument to "dashed". 
+
+```{r}
+ggplot(data = country, aes(x=year, y=lifeExp)) + geom_line(colour = 'blue', size = 0.8) + geom_point(aes(size = gdpPercap), shape = 21, color = "blue", fill = "red") + labs(x="Year", y="Life expectancy at birth") + ggtitle("Life Quality of Vietnam from 1952 to 2007 ") + guides(size = guide_legend(title = "GDP per capita in USD")) + theme_classic() + geom_hline(yintercept = avg_2007, linetype = "dashed")
+```
+
+21. And finally, add an annotation layer using `annotate("text", x = 1980, y = avg_2007 + 0.5, label = "Avg life expectancy in 2007")`. you may have to play with the `x` and `y` values inside the `annotate()` function to get it to look right.
+
+```{r}
+ggplot(data = country, aes(x=year, y=lifeExp)) + geom_line(colour = 'blue', size = 0.8) + geom_point(aes(size = gdpPercap), shape = 21, color = "blue", fill = "red") + labs(x="Year", y="Life expectancy at birth") + ggtitle("Life Quality of Vietnam from 1952 to 2007 ") + guides(size = guide_legend(title = "GDP per capita in USD")) + theme_classic() + geom_hline(yintercept = avg_2007, linetype = "dashed") + annotate("text", x = 1980, y = avg_2007 + 0.5, label = "Avg life expectancy in 2007")
+```
+
+```{r}
+ggplot(data = country, aes(x=year, y=lifeExp)) + geom_line(colour = 'blue', size = 0.8) + geom_point(aes(size = gdpPercap), shape = 21, color = "blue", fill = "red") + labs(x="Year", y="Life expectancy at birth") + ggtitle("Life Quality of Vietnam from 1952 to 2007 ") + guides(size = guide_legend(title = "GDP per capita in USD")) + theme_classic() + geom_hline(yintercept = avg_2007, linetype = "dashed") + annotate("text", x = 1970, y = avg_2007 + 1, label = "Avg life expectancy in 2007")
+```
+
+## Original vs Final Plot
+
+22. Store the original plot in the variable `p1`; this is the plot from Exercise 9. Just add the code after the assignment operator `<-`. 
+
+```{r eval=FALSE}
+p1 <- ggplot(data = country, aes(x=year, y=lifeExp))
+```
+
+23. Store your modified plot in the variable `p2`; this is the plot from Exercise 20.  
+
+```{r eval=FALSE}
+p2 <- ggplot(data = country, aes(x=year, y=lifeExp)) + geom_line(colour = 'blue', size = 0.8) + geom_point(aes(size = gdpPercap), shape = 21, color = "blue", fill = "red") + labs(x="Year", y="Life expectancy at birth") + ggtitle("Life Quality of Vietnam from 1952 to 2007 ") + guides(size = guide_legend(title = "GDP per capita in USD")) + theme_classic() + geom_hline(yintercept = avg_2007, linetype = "dashed")
+```
+
+24. To compare the two plots, run the following code. 
+
+```{r eval=FALSE, message=FALSE, warning=FALSE}
+library(gridExtra)
+grid.arrange(p1, p2, ncol = 2, widths = c(3/8, 5/8))
+```
+
+
+
+
+
+
+
+
+
