@@ -1,0 +1,453 @@
+---
+title: "Introduction to linear regression - Part 2"
+output:
+  html_document:
+    highlight: pygments
+    theme: cerulean
+  pdf_document: default
+Name: THI NGOC DIEM NGUYEN
+ID: 0778061
+Week: 10  
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+## Batter up
+
+In the last lab we built a linear regression
+model for `at_bats` versus `runs` and residuals.  
+This lab continues where we left off and considers the model 
+diagnostics and explore other models. 
+
+## Load packages
+
+```{r packages, warning = FALSE, message = FALSE}
+library(tidyverse)
+```
+
+## The data
+
+Let's load up the data for the 2011 season.
+
+```{r load-data}
+download.file("http://www.openintro.org/stat/data/mlb11.RData", destfile = "mlb11.RData")
+load("mlb11.RData")
+```
+
+In addition to runs scored, there are seven traditionally used variables in the 
+data set: at-bats, hits, home runs, batting average, strikeouts, stolen bases, 
+and wins. There are also three newer variables: on-base percentage, slugging 
+percentage, and on-base plus slugging. For the first portion of the analysis 
+we'll consider the seven traditional variables. At the end of the lab, you'll 
+work with the newer variables on your own.
+
+## Model diagnostics
+
+To assess whether the linear model is reliable, we need to check for (1) 
+linearity, (2) nearly normal residuals, and (3) constant variability.
+
+**Linearity**: You already checked if the relationship between runs and at-bats
+is linear using a scatter plot. We should also verify this condition with a plot 
+of the residuals vs at-bats. 
+
+Let's do this by adding the values for `runs` that the model *predicts* and 
+then calculating the *residuals*, that is, the difference between the actual 
+values for `runs` and the predicted values for `runs` using your linear model.
+
+Recall that we used the `lm` function in **Part 1** to fit  a linear model to 
+this data: 
+
+```{r m1}
+m1 <- lm(runs ~ at_bats, data = mlb11)
+summary(m1)
+```
+
+Refer back to that lab if you forget what the output above means. 
+
+1. Use the information from our `lm` output and `mutate` to create 
+two new columns in our baseball data frame: one for the predicted values and one for
+the residuals. 
+
+> Since the equation for our model is:
+$\hat{rm predicted\;runs} = -2789.2429 + 0.6305{\rm at\_bats}, we can use this in a mutate statement to calculate our predicted values
+
+> Once we have our predicted values we can calculate the residual as 
+${\rm residuals} = {\rm actual \;values} - {\rm predicted\;values}$
+
+```{r}
+mlb11_mod <- mlb11 %>% mutate(pred_runs = -2789.2429 + 0.6305 * at_bats,
+                              residuals = runs - pred_runs)
+
+mlb11_mod %>% select(team, runs, pred_runs, at_bats, residuals) %>% head()
+```
+
+
+2. Create a plot of `at_bats` vs `residuals`. 
+
+```{r}
+ggplot(mlb11_mod, aes(x = at_bats, y = residuals)) + 
+  geom_point() +
+  geom_hline(yintercept = 0) 
+```
+
+3.  Is there any apparent pattern in the residuals plot? What does this indicate
+    about the linearity of the relationship between runs and at-bats?
+
+> There is no apparent pattern in the residuals plot above. This means that a linear model is appropriate to describe the relationship betweens 'runs' and 'at_bats', that is, the condition of "linearity" has been met.
+
+**Nearly normal residuals**: To check this condition, we can look at a histogram.
+
+> Let's check what a **normal distribution** looks like:
+
+```{r echo=FALSE}
+ggplot(data = data.frame(x = c(-3, 3)), aes(x)) +
+  stat_function(fun = dnorm, n = 101, args = list(mean = 0, sd = 1)) + ylab("") + 
+  scale_y_continuous(breaks = NULL)
+```
+
+> The normal distribution is a unimodal, symmetric distribution. This is the shape the residuals should take if they are a result of normal random variations found in almost all data. Note that the range of -2 to 2 can take on any values $-x$ to $x$. Also note that your data will "never" looks this perfectly unimodal and symmetric. The fewer data points you have the less it will look like the plot above. We are interested in "nearly" or "approximately" normal.
+
+> The "binwith" argument will help to determine if the distribution is nearly normal.
+
+4. Create a histogram of the residuals. 
+
+```{r}
+ggplot(mlb11_mod, aes(x = residuals)) +
+  geom_histogram(fill = 'purple', colour = 'black', binwidth = 55)
+```
+
+5.  Based on the histogram, does the nearly normal residuals condition appear to be met?
+
+> Based on the histogram above, the residuals appear to be nearly normal so this condition is met.
+
+**Constant variability**:
+
+6.  Based on the plot in (1), does the constant variability condition appear to 
+    be met?
+    
+> We will redraw the plot in (1) with some extra horizontal lines:
+
+```{r}
+ggplot(mlb11_mod, aes(x = at_bats, y = residuals)) + 
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  geom_hline(yintercept = 100, colour = 'blue') +
+  geom_hline(yintercept = -100, colour = 'blue')
+```
+
+> Since all the residuals are basically contained within the 2 horizontal blue lines and do not seem to be getting closer to 0 or farther away as 'at_bats' increase, or have any obvious pattern that changes the variability as we increase 'at_bats', it seems like condition of constant variability has also been met.
+
+### The `broom` package
+
+Instead of having to input the equation to calculate the predictions and 
+residuals, we can get these directly from the `lm` model. This is easiest 
+if we use the `broom` package. 
+
+7. Install the `broom` package. Be sure to NOT include this code in this notebook. 
+
+We can now use `augment` function from this package to clean up the output of our model. 
+
+```{r}
+library(broom)
+m1_aug <- augment(m1) %>% 
+            select(runs, at_bats, predicted = .fitted, residuals = .resid)
+m1_aug
+```
+
+8. Use this new data frame to reproduce the model diagnostics plot above. 
+
+```{r}
+ggplot(m1_aug, aes(x = at_bats, y = residuals)) + 
+  geom_point() +
+  geom_hline(yintercept = 0) 
+```
+
+```{r}
+ggplot(m1_aug, aes(x = residuals)) +
+  geom_histogram(fill = 'pink', colour = 'black', binwidth = 55)
+```
+
+```{r}
+ggplot(m1_aug, aes(x = at_bats, y = residuals)) + 
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  geom_hline(yintercept = 100, colour = 'blue') +
+  geom_hline(yintercept = -100, colour = 'blue')
+```
+
+* * *
+
+## On Your Own
+
+```{r}
+glimpse(mlb11)
+```
+
+
+9. Choose another traditional variable from `mlb11` that you think might be a 
+    good predictor of `runs`. Produce a scatterplot of the two variables and fit 
+    a linear model. At a glance, does there seem to be a linear relationship?
+
+> I will choose the variable 'hits'.
+
+```{r}
+ggplot(mlb11, aes(x = hits, y = runs)) +
+  geom_point()
+```
+
+> The relationship between 'hits' and 'runs' appears to be positive, linear and quite strong.
+
+10. How does this relationship compare to the relationship between `runs` and 
+    `at_bats`? Use the R$^2$ values from the two model summaries to compare. 
+    Does your variable seem to predict `runs` better than `at_bats`? How can you
+    tell?
+    
+> Let's recall what the plot of 'at_bats' and 'runs' looks like:
+
+```{r}
+ggplot(mlb11, aes(x = at_bats, y = runs)) + 
+  geom_point()
+```
+
+> Both relationships are positive and linear.
+
+> However, between these two plots, it seems that 'hits' has a stronger correlation to 'runs' since it seems like we could draw a line on the 'hits' scatter plot that would do a good job of describing the relationship and have less variability. Let's compare the correlation to get a more quantitative measure.
+
+```{r}
+print(cor(mlb11$runs, mlb11$at_bats))
+print(cor(mlb11$runs, mlb11$hits))
+```
+
+> The correlation between 'hits' and 'runs' is larger than that between 'at_bats' and 'runs'.
+
+> Let's compare the two models:
+
+```{r}
+m_at_bats <- lm(runs ~ at_bats, data = mlb11)
+
+print(summary(m_at_bats))
+```
+
+\[
+  \hat{runs} = -2789.2429 + 0.6305 * at\_bats
+\]
+
+```{r}
+m_hits <- lm(runs ~ hits, data = mlb11)
+
+print(summary(m_hits))
+```
+
+\[
+  \hat{runs} = -375.56  + 0.7589 * hits
+\]
+
+### $R^2$
+
+```{r echo=FALSE}
+tab1 = "
+| explanatory variable | R-squared |
+|:--------------------:|:---------:|
+| at_bats              | 0.3729    |
+| hits                 | 0.6419    |
+"
+
+cat(tab1)
+
+```
+
+> $R^2$ for the model using "hits" as an explanatory variable is higher so 'hits' does a better job of explaining the variability in 'runs'. Using 'hits' as an explanatory variable explains about 64% of the variability in 'runs', compared to only 37% for 'at_bats'.
+
+>Since 'hits' does a better job of predicting 'runs', we will pick that as our best model.
+
+> Now we should go through the model diagnostics to make sure our model using 'hits' satisfied all the conditions necessary for a least square model to be reliable.
+
+#### Model diagnostics for 'hits'
+
+Create columns for 'pred_runs' and 'residuals'  based on the model we are creating using 'hits' as an explanatory variable.
+
+```{r}
+mlb11_hits <- mlb11 %>% mutate(pred_runs = -375.56 + 0.7589 * hits,
+                              residuals = runs - pred_runs) 
+
+mlb11_hits %>% select(team, runs, pred_runs, hits, residuals) %>% head()
+```
+
+* Is a linear model appropriate? *
+
+```{r}
+ggplot(mlb11_hits, aes(x = hits, y = residuals)) + 
+  geom_point()
+```
+
+> There is no apparent pattern here, so this condition has been met.
+
+* Nearly normal residuals? *
+
+```{r}
+ggplot(mlb11_hits, aes(x = residuals)) +
+  geom_histogram(fill = 'blue', colour = 'black', binwidth = 35)
+```
+
+> Residuals are nearly normal so this condition has been met.
+
+* Constant variability? *
+
+```{r}
+ggplot(mlb11_hits, aes(x = hits, y = residuals)) + 
+  geom_point() +
+  geom_hline(yintercept = 100, colour = 'blue') +
+  geom_hline(yintercept = -100, colour = 'blue')
+```
+
+> The is no apparent trend in the variability so this condition has been met.
+
+> Since all there conditions have been met, we can reliably use this model to describe the relationship between 'runs' and 'hits' and as a way to predict 'runs' for a team given their 'hits'.
+
+> Now we can create models for the remaining variables and compare their R-squared value to see if any of them will be better at predicting 'runs' than 'hits'.
+
+11. Now that you can summarize the linear relationship between two variables, 
+    investigate the relationships between `runs` and each of the other five 
+    traditional variables. Which variable best predicts `runs`? Support your 
+    conclusion using the graphical and numerical methods we've discussed.
+
+```{r}
+glimpse(mlb11)
+```  
+
+> Investigate the relationships between `runs` and each of the other five traditional variables
+
+```{r}
+ggplot(mlb11, aes(x=runs, y=homeruns))+
+  geom_point()
+```
+
+```{r}
+ggplot(mlb11, aes(x=runs, y=bat_avg))+
+  geom_point()
+```
+
+
+```{r}
+ggplot(mlb11, aes(x=runs, y=strikeouts))+
+  geom_point()
+```
+
+```{r}
+ggplot(mlb11, aes(x=runs, y=stolen_bases))+
+  geom_point()
+```
+
+```{r}
+ggplot(mlb11, aes(x=runs, y=wins))+
+  geom_point()
+```
+
+```{r}
+print(cor(mlb11$runs, mlb11$hits))
+print(cor(mlb11$runs, mlb11$homeruns))
+print(cor(mlb11$runs, mlb11$bat_avg))
+print(cor(mlb11$runs, mlb11$strikeouts))
+print(cor(mlb11$runs, mlb11$stolen_bases))
+print(cor(mlb11$runs, mlb11$wins))
+```
+
+> From these investigation using the graphical and numerical methods, we can see 'bat_avg' is the best variable in predicting `runs` while comparing the correlation values among 5 other variables and the scatter plots.
+
+12. Now examine the three newer variables. These are the statistics used by the 
+    author of *Moneyball* to predict a teams success. In general, are they more 
+    or less effective at predicting runs that the old variables? Explain using 
+    appropriate graphical and numerical evidence. Of all ten variables we've 
+    analyzed, which seems to be the best predictor of `runs`? Using the limited 
+    (or not so limited) information you know about these baseball statistics, 
+    does your result make sense?
+
+```{r}
+ggplot(mlb11, aes(x=runs, y=new_onbase))+
+  geom_point()
+```
+
+```{r}
+ggplot(mlb11, aes(x=runs, y=new_slug))+
+  geom_point()
+```
+
+```{r}
+ggplot(mlb11, aes(x=runs, y=new_obs))+
+  geom_point()
+```
+
+```{r}
+print(cor(mlb11$runs, mlb11$new_onbase))
+print(cor(mlb11$runs, mlb11$new_slug))
+print(cor(mlb11$runs, mlb11$new_obs))
+```
+
+> In general, are they more or less effective at predicting 'runs' that the old variables? 
+They are more effective at predicting 'runs' than that the old variables.
+
+> Of all ten variables we’ve analyzed, which seems to be the best predictor of runs?
+Among 10 variables, `new_obs` is the best predictor of `runs` because the scatter plot of 'runs' and 'new_obs' is the most positive and shows the strongest relationship. And the correlation value is the highest one.
+
+> Using the limited (or not so limited) information you know about these baseball statistics, does your result make sense?
+
+From my limited knowledge about baseball, there are always trikes, stolen and slugging in a game; there for the on-base plus slugging variable is the best predictor for 'runs'. Therefore, this result makes sense.
+
+13. Check the model diagnostics for the regression model with the variable you 
+    decided was the best predictor for runs.
+
+```{r}
+m_new_obs <- lm(runs ~ new_obs,data = mlb11)
+summary(m_new_obs)
+```
+
+$$
+\hat{\rm m\;_new_obs} = -686.61+ 1919.36 *{\rm new\_obs}
+$$
+
+```{r}
+mlb11_new_obs <- mlb11 %>% mutate(pred_runs = -686.61 + 1919.36 * new_obs, residuals= runs - pred_runs)
+
+mlb11_new_obs %>% select(team, runs, pred_runs, new_obs, residuals) %>% head()
+```
+
+* Is a linear model appropriate? *
+
+```{r}
+ggplot(mlb11_new_obs, aes(x = new_obs, y = residuals)) + 
+  geom_point()
+```
+
+> There is no apparent pattern here, so this condition has been met.
+
+* Nearly normal residuals? *
+
+```{r}
+ggplot(mlb11_new_obs, aes(x = residuals)) +
+  geom_histogram(fill = 'lavender', colour = 'black', binwidth = 45)
+```
+
+> Residuals are nearly normal so this condition has been met.
+
+* Constant variability? *
+
+```{r}
+ggplot(mlb11_new_obs, aes(x = new_obs, y = residuals)) + 
+  geom_point() +
+  geom_hline(yintercept = 100, colour = 'blue') +
+  geom_hline(yintercept = -100, colour = 'blue')
+```
+
+> The is no apparent trend in the variability so this condition has been met.
+
+> Since all there conditions have been met, we can reliably use this model to describe the relationship between 'runs' and 'new_obs'.
+
+<div id="license">
+This a modified version of a product of OpenIntro that is released under a [Creative Commons 
+Attribution-ShareAlike 3.0 Unported](http://creativecommons.org/licenses/by-sa/3.0). 
+This lab was adapted for OpenIntro by Andrew Bray and Mine &Ccedil;etinkaya-Rundel 
+from a lab written by the faculty and TAs of UCLA Statistics.
+</div>
