@@ -1,0 +1,218 @@
+---
+title: "Data Visualization: Part I"
+output:
+  html_document:
+    css: lab_2.css
+    highlight: pygments
+    theme: cerulean
+    Name: THI NGOC DIEM NGUYEN
+    Student ID: 0778061
+  pdf_document: default
+---
+
+The goal of this lab is to introduce you to **Data Visualization** using the 
+`ggplot2` package (which is part of the `tidyverse` package). `ggplot2` implements 
+what is know as the *grammar of graphics*, a small set of concepts from which
+any statistical graph can be created and understood. 
+
+We will be following the basic structure of Chapter 3 of [R for Data Science](https://r4ds.had.co.nz/). 
+
+## Load the necessary package
+
+
+We'll begin by loading the main R package we will be using to do all our 
+data analysis: the `tidyverse` package.
+
+```{r warning = FALSE, message = FALSE}
+library(tidyverse)
+```
+
+If you get an error that says *...there is no package called...*, you need to install the package. To do so, open up the console in RStudio and type `install.packages("tidyverse")` 
+at the prompt. After the package is installed, rerun the above code. 
+
+## Getting an initial feel for the data
+
+In any data analysis project, one of the very first steps is to take a look 
+at our data. For now, we will be working with the `mpg` (short for *miles 
+per gallon*) data set, which comes as part of the `tidyverse` package. That 
+means it is already installed and ready for you to use. 
+
+The simplest way to see the data is to type the name of the data frame. 
+```{r}
+mpg
+```
+
+Take a moment to look over the data. Note the variable names, the number of rows, 
+the number of columns, the values for each variable, etc. 
+
+1. Use the `head()` function to view the first few rows of `mpg`. Use the `tail()` function 
+to view the last few rows. 
+
+```{r}
+head(mpg)
+```
+
+```{r}
+tail(mpg)
+```
+
+2. Try the `View()` function on `mpg`. How does this compare to data you have viewed 
+in a spreadsheet? 
+
+```{r}
+view(mpg)
+```
+after executing view(mpg), the full data set will be shown in another sheet name "mpg" next to current sheet "R4DS_Chapter_3a.rmd". Additionally, the data shown in table form with all data, we can interact with each variable.
+
+3. Use the `glimpse()` function on `mpg` and create a table noting how R is storing 
+each variable (that is, what data type is it) compared to what you know the variable 
+data type to be. For example, `model` is stored as *character* type but this is a 
+*categorical* variable. You may find the `?mpg` command helpful. 
+
+```{r}
+glimpse(mpg)
+```
+Details as below:
+- 'manufacturer' is stored as 'character' type but this is a categorical variable 
+- 'model' is stored as 'character' type but this is a categorical variable
+- 'displ' is stored as 'double' type and this is a numeric variable, so that's ok
+- 'year' is stored as 'integer' type and this is a numeric variable, so that's ok
+- 'cyl' is stored as 'integer' type but this is a categorical variable
+- 'trans' is stored as 'character' type but this is a categorical variable
+- 'drv' is stored as 'character' type but this is a categorical variable
+- 'cty' is stored as 'integer' type and this is a numeric variable, so that's ok
+- 'hwy' is stored as 'integer' type and this is a numeric variable, so that's ok
+- 'fl' is stored as 'character' type but this is a categorical variable
+- 'class' is stored as 'character' type but this is a categorical variable
+
+```{r}
+?mpg
+```
+
+4. How many rows are in `mpg`? How many columns?
+
+There are 234 rows and 11 columns in "mpg".
+
+5. What do the `displ` and `hwy` variables stand for? 
+
+- 'displ' stands for engine displacement, in liters
+- 'hwy' stands for highway miles per gallon
+
+### Creating a visualization
+
+As noted in the textbook, here's a question we could try to answer with the *mpg* data:
+
+> Do cars with big engines use more fuel than cars with small engines? 
+
+To begin to answer this question, let's create a scatter plot of the variables `displ` and 
+`hwy` as they are closely connected to the question we are asking. Visualizing 
+the relationship between these two variables may reveal a pattern that is hard 
+to see by just looking at the numbers in the data frame.  
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy)) 
+```
+
+6. Describe the general relationship between `hwy` and `displ`.
+
+The relationship between 'hwy' and 'displ' can be described as a moderately strong, negative, linear relationship. We also see some variability in the data, so we can understand that the relationship is not a perfect one. In another way, the relationship between these two variables does not imply a causal relationship. 
+
+7. Does the relationship you see in the scatter plot confirm or refute 
+our hypothesis that *cars with big engines use more fuel than cars with 
+small engines*?
+
+With the caveats of exercise 6, what we see in the plot confirms our hypothesis that cars with big engines use more fuel than cars with small engines.
+
+8. Create a similar scatter plot, except this time use `cty` instead of `hwy` to see if the same type of relationship holds. Describe the general relationship between `cty` and `displ`.
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = cty))
+```
+The relationship between 'cty' and 'displ' is similar to the relationship between 'hwy' and 'displ'. It can be described as a negative, linear relationship. 
+
+9. Is the `cty` and `displ` relationship stronger or weaker than the `hwy` and `displ` relationship? What characteristic of the plot are you basing your answer on?
+
+It seems that the relationship between 'cty' and 'displ' is a bit weaker. If we draw a line on the plot to represent the trend in data, it looks like the slope in the 'cty' and 'displ' plot is less than it is in the 'hwy' and 'displ' plot.
+
+10. Make a scatter plot of `hwy` versus `cyl`. Does this tell us the same thing as our plot
+with `hwy` versus `displ`? Would you expect that to be the case?
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = hwy, y = cyl))
+```
+This plot shows us the relationship between `hwy` versus `cyl`, which is the number of cylinders, I could say that number of cylinders has a positive relationship with engine displacement, therefore cars with more cylinders or bigger engines will consume more fuel, the plot says the same thing with the plot between 'hwy' and 'displ'. To be more specific, cars with more cylinders will consume more fuel.
+
+11. Make a scatter plot of `class` versus `drv`. Why is this plot not useful?
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = class, y = drv))
+```
+The relationship between `class` and `drv` is not clear and not useful since we can only see 12 points but the data contain 234 observations. Since there are only a small number of values for both 'drv' and 'class', many points for many observations are at the same point. In this plot, eg: we can't tell how many observations the point at 'midsize' and 'f' represents. Therefore, we cannot conclude any thing from this plot.
+
+#### A few other plots
+
+Let's look at the distribution of the `hwy` variable. To do this we will create a histogram. 
+
+```{r}
+ggplot(data = mpg) + 
+  geom_histogram(mapping = aes(x = hwy), fill = 'skyblue', colour = 'black', binwidth = 2)
+
+```
+
+12. How is the code for this histogram SIMILAR to the code we used for the 
+scatter plots above?
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = class, y = drv))
+ggplot(data = mpg) + 
+  geom_histogram(mapping = aes(x = hwy), fill = 'skyblue', colour = 'black', binwidth = 2)
+The syntax looks the same. Both start with the command 'ggplot(data = mpg)'. And both have a mapping for variables in the data frame. Both have 'geom' layer.
+
+13. How is the code for this histogram DIFFERENT to the code we used for the 
+scatter plots above?
+The 'geom_' functions are different to let you choose the layer you want to represent the data. The options for the histogram layer not only contains 'mapping', but also has 'fill', 'colour' and 'binwidth'.
+
+Now let's take a look at the counts and type of vehicles according to the `class` variable, which is a *categorical* variable. 
+
+```{r}
+ggplot(data = mpg) + 
+  geom_bar(mapping = aes(x = class), fill = 'skyblue', colour = 'black')
+
+```
+
+
+14. Do you think there could be a connection between fuel economy and vehicle 
+class?
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = class, y = hwy))
+```
+
+
+It seems to be reasonable to expect a connection between fuel economy and vehicle class. For example, the scatter plot above shows that one would expect 'SUV' to have bigger engines and lower fuel economy than 'compact' cars. 
+
+15. Create a bar graph similar to the one above but this time look at the number 
+of vehicles in the data based on `manufacturer`. Add `+ coord_flip()` to your 
+code so you can see the labels more clearly. Does anything surprise you about 
+what you see? (For example: Is anything missing? Is something included that 
+shouldn't be there? Does anything not look right? Does anything contradict 
+something you thought was true?)
+
+```{r}
+ggplot(data = mpg) + 
+  geom_bar(mapping = aes(x = manufacturer), fill = 'skyblue', colour = 'black') + coord_flip()
+```
+This data set has only 234 observations. It doesn't represent every brand in the market. We cannot see some popular manufacturers in the plot, eg: 'GM', 'chrysler', 'porsche', 'mercedes'. 
+Moreover, for the manufacturers in the plot, the counts cannot truly reflect which brand is more popular in the market. Eg: the count of 'honda' is quite low while this many people are driving this brand in real life.
+
+
+16. In what way(s) do you think domain knowledge (knowledge of the field or subject to which the data belong) is necessary for proper data analysis?
+
+Without domain knowledge, how would you be able to answer the above questions, especially the question 15. While one may not need to be the foremost expert in the domain of the data, it is difficult to do a proper analysis without domain knowledge because you will be unable to solve problems or figure out inconsistencies in the data or fail to understand which variables one would reasonably expect to be correlated and why.
+
+
+

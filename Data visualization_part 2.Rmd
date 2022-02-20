@@ -1,0 +1,148 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+Name: Thi Ngoc Diem Nguyen
+Student ID: 0778061
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+##Exercise 1:
+
+Load the tidyverse package.
+
+```{r}
+library(tidyverse)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+##Exercise 2:
+
+Produce a scatter plot of displ vs hwy
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy)) 
+```
+
+##Exercise 3:
+
+Add another aesthetic: map a continuous variable to colour
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, colour = cty)) 
+```
+
+##Exercise 4:
+
+Map the same continuous variable to size
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, size = cty)) 
+```
+
+##Exercise 5:
+
+Map the same continuous variable to shape
+
+Refer to screen shot file which is submitted separately.
+
+##Exercise 6:
+
+Are all of these mappings equally successful at conveying information about the variable you chose? Why/why not?
+
+No, these mappings are not equally successful at conveying information. To be more specific, in the colour = cty plot, it is hard to distinguish different shade of colors, especially for surrounding values, eg: compare value cty = 25 and cty = 27. For the mapping to size, it does better but larger points may obscure nearby smaller points. The last one, the mapping to shape doesn't work since the "ggplot2" function does not know how to assign a finite number of shapes to a continuous scale. Even if we are using integer, R still may not have enough shapes to allocate for each value of the data.
+
+##Exercise 7:
+
+Repeat exercises 2-5 but now use a categorical variable
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, colour = drv))
+```
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, size = drv))
+```
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, shape = drv)) 
+```
+
+##Exercise 8:
+
+How does the mapping of the colour aesthetic behave differently for categorical vs continuous variables?
+
+We get a monochromatic colour spectrum versus a set of qualitative colours.
+When we look at categorical variables, we have different monochromatic colours.
+When we look at continuous variables, we can see one colour going from light to dark.
+
+##Exercise 9:
+
+All plots have a set of required, and a set of optional, aesthetic mappings. Which mappings are required will depend on the type of plot you are trying to create. Run the code below and read the “R console” output.
+
+Refer to screen shot file which is submitted separately.
+
+
+##Exercise 10:
+
+Using ?geom_point for reference, list all the aesthetics available for scatter plots in ggplot. Which are required?
+```{r}
+?geom_point
+```
+
+geom_point() understands the following aesthetics :
+
+x
+
+y
+
+alpha
+
+colour
+
+fill
+
+group
+
+shape
+
+size
+
+stroke
+
+##Exercise 11:
+
+What happens if you map the same variable to multiple aesthetics?
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, shape = drv, colour = drv))
+```
+
+This may work but we may get redundant encodings: both the colour and shape aesthetics mapping are conveying information about the same variable.
+
+##Exercise 12:
+
+What happens if you map an aesthetic to something other than a variable name, like aes(colour = displ < 5)?
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = cty, y = hwy, colour = displ < 5))
+```
+
+The condition "displ < 5" convert the displ variable to logical variable and then the function "ggplot2" assigns 1 colour for those points where the condition is FALSE, eg: when displ > 5, and another colour for when the condition is TRUE, eg: when displ < 5.
+
+
