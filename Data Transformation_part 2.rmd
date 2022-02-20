@@ -1,0 +1,313 @@
+---
+title: "Data Transformation - Part IV"
+output:
+  html_document:
+    df_print: paged
+Name: THI NGOC DIEM NGUYEN
+ID: 0778061
+Week: 7
+---
+
+```{r set up, include=FALSE}
+#knitr::opts_chunk$set(eval = FALSE)
+```
+
+## Load packages
+
+```{r warning = FALSE, message = FALSE}
+library(tidyverse)
+library(gapminder)
+library(nycflights13)
+```
+
+## The ''summarize' verb
+
+'summarize' takes a dataset with $n$ observations, computes the requested summaries, and returns a dataset with 1 observation. Here we calculate the average life expectancy.
+
+```{r}
+summarize(gapminder, avg_life = mean(lifeExp))
+```
+
+1. Find the average GDP per capita.
+
+```{r}
+summarize(gapminder, avg_GDP = mean(gdpPercap))
+```
+
+2. Find the average population.
+
+```{r}
+summarize(gapminder, avg_pop = mean(pop))
+```
+
+Some other functions that take a vector of values and return a single value that work well with 'summarize' are: first, last, min, max, nth, n, n_distinct, median, var, sd, IQR.
+
+3. Use 'n_distinct' to find the number of continents in the data frame.
+
+```{r}
+summarize(gapminder, n_distinct(continent))
+```
+
+4. Use 'last' to find the last country listed in the data frame.
+
+```{r}
+summarize(gapminder, last(country))
+```
+
+We can also use 'summarize_all' to act on multiple columns at once:
+
+```{r}
+gapminder %>% 
+  select(lifeExp, pop, gdpPercap) %>% 
+  summarize_all(funs(mean, median))
+```
+
+## Pipe Operator
+
+From here on we will start using the pipe operator.
+
+## Grouping
+
+Things get more interesting when we start using 'group_by' to form groups within our data frame and then perform analysis group by group.
+
+5. In the console, type 'gapminder' and then type 'gapminder %>% group_by(continent)'. Note the information about the grouping by continent at the top of the data frame. (This metadata does not get displayed in a notebook.)
+
+Here we count the number of observations per continent:
+
+```{r}
+gapminder %>% group_by(continent) %>% 
+  summarize(n = n())
+```
+
+And here we find the number of distinct countries per continent:
+
+```{r}
+gapminder %>% group_by(continent) %>% 
+  summarize(n_countries = n_distinct(country))
+```
+
+6. Find the average life expectancy per year by continent.
+
+```{r}
+gapminder %>% 
+  group_by(continent, year) %>% 
+  summarize(avg_life_exp = mean(lifeExp))
+```
+
+7. Find the highest GDP per capita by year and arrange in descending order.
+
+```{r}
+gapminder %>% 
+  group_by(year) %>% 
+  summarize(max_GDP = max(gdpPercap)) %>% 
+  arrange(desc(max_GDP))
+```
+
+8. Find the lowest GDP per capita by year and arrange in ascending order.
+
+```{r}
+gapminder %>% 
+  group_by(year) %>% 
+  summarize(min_GDP = min(gdpPercap)) %>% 
+  arrange(min_GDP)
+```
+
+## Let’s switch over to 'nycflights13'.
+
+9. Which airline had the highest average departure delay?
+
+```{r}
+flights %>% 
+  group_by(carrier) %>% 
+  summarize(avg_delay = mean(dep_delay, na.rm = TRUE)) %>% 
+  arrange(desc(avg_delay))
+```
+
+10. Which month had the most flights?
+
+```{r}
+flights %>% 
+  group_by(month) %>% 
+  summarize(n = n()) %>% 
+  arrange(desc(n))
+```
+
+11. Which month had the most on-time (or early) departures?
+
+```{r}
+flights %>% filter(dep_delay <= 0) %>%
+  group_by(month) %>% 
+  summarize(n = n()) %>% 
+  arrange(desc(n))
+```
+
+12. Which of the 3 New York City airports had the highest average departure delay?
+
+```{r}
+flights %>% filter(!is.na(dep_delay)) %>%
+  group_by(origin) %>% 
+  summarize(avg_dep_delay = mean(dep_delay)) %>% 
+  arrange(desc(avg_dep_delay))
+```
+
+13. For the airport identified above, was there a particular month that had a high average departure delay? Or were all the months about the same?
+
+```{r}
+flights %>% filter(origin == 'EWR', !is.na(dep_delay)) %>%
+  group_by(month) %>% 
+  summarize(avg_dep_delay = mean(dep_delay)) %>% 
+  arrange(desc(avg_dep_delay))
+```
+
+14. Which destination airport had the highest arrival delay? Any particular months stand out as the cause? Any particular airline?
+
+```{r}
+flights %>% filter(!is.na(arr_delay)) %>%
+  group_by(dest) %>% 
+  summarize(avg_arr_delay = mean(arr_delay)) %>% 
+  arrange(desc(avg_arr_delay))
+```
+
+```{r}
+flights %>% filter(!is.na(arr_delay)) %>%
+  group_by(dest, month) %>% 
+  summarize(avg_arr_delay = mean(arr_delay)) %>% 
+  arrange(dest, desc(avg_arr_delay))
+```
+
+```{r}
+flights %>% filter(!is.na(arr_delay)) %>%
+  group_by(dest, carrier) %>% 
+  summarize(avg_arr_delay = mean(arr_delay)) %>% 
+  arrange(dest, desc(avg_arr_delay))
+```
+
+15. Find the first and last departure for each day.
+
+```{r}
+flights %>% filter(!is.na(dep_delay) & !is.na(arr_delay)) %>%
+  group_by(year, month, day) %>% 
+  summarize(first = min(dep_time), last = max(dep_time))
+```
+
+Sometimes you will want to remove the grouping. To do that we can do the following:
+
+```{r}
+flights %>% 
+  group_by(month) %>% 
+  summarize(n = n()) %>% 
+  ungroup()
+```
+
+## Grouped mutates
+
+Sometimes you don’t want to collapse the n rows for each group into one row. You want to keep your groups, but compute within them.
+
+Find the top two carriers by origin airport ranked according to average departure delay:
+
+```{r}
+flights %>% group_by(origin, carrier) %>% 
+  summarize(avg_dep_delay = mean(dep_delay, na.rm = TRUE)) %>% 
+  mutate(rank = rank(desc(avg_dep_delay))) %>% 
+  filter(rank < 3) %>% 
+  arrange(origin, rank)
+```
+
+16. For each destination, compute the total minutes of delay. For each flight, compute the proportion of the total delay for its destination.
+
+```{r}
+flights %>% filter(!is.na(arr_delay) & arr_delay > 0) %>% 
+  group_by(dest) %>% 
+  mutate(arr_delay_total = sum(arr_delay), arr_delay_prop = arr_delay / arr_delay_total) %>% 
+  select(dest, arr_delay_total, arr_delay_prop) %>% 
+  arrange(dest)
+```
+
+## Counting
+
+Here we count the number of flights per month.
+
+```{r}
+flights %>% group_by(month) %>% 
+  summarize(n = n())
+```
+
+17. Count the number of flights per carrier.
+
+```{r}
+flights %>% group_by(carrier) %>% 
+  summarize(n = n())
+```
+
+18. Count the number of flights per origin.
+
+```{r}
+flights %>% group_by(origin) %>% 
+  summarize(n = n())
+```
+
+19. Count the number of flights by carrier, destination, and month.
+
+```{r}
+flights %>% group_by(carrier, dest, month) %>% 
+  summarize(n = n())
+```
+
+Each time we apply summarize we remove one layer of grouping.
+
+```{r}
+flights %>% group_by(carrier, dest, month) %>% 
+  summarize(n = n()) %>% 
+  summarize(n = n()) %>% 
+  summarize(n = n())
+```
+
+Counts are so useful that 'dplyr' has a helper function that does the grouping and counting. Here we 'count' the number of flights per plane using 'count' instead of grouping by 'tailnum' and then using 'summarize(n = n())'.
+
+```{r}
+flights %>% 
+  filter(!is.na(dep_delay) & !is.na(arr_delay)) %>% 
+  count(tailnum)
+```
+
+## Why do we care about counting
+
+20. Exclude cancelled flights (i.e., filter out observations where
+'dep_delay' and 'arr_delay' is missing. Save the results in a variable called 'not_cancelled'.
+
+```{r}
+not_cancelled <- flights %>% 
+  filter(!is.na(dep_delay) & !is.na(arr_delay))
+```
+
+21. Determine the average arrival delay and counts by tailnum for these flights and store in a variable called 'delays'.
+
+```{r}
+delays <- not_cancelled %>% group_by(tailnum) %>%
+  summarise(avg_arr_delay = mean(arr_delay), n = n())
+delays
+```
+
+22. Create a scatter plot of counts vs average arrival delays. Use 'shape = 21' and 'alpha = 0.25'.
+
+```{r}
+ggplot(delays, aes(x = n, y = avg_arr_delay)) + geom_point(shape = 21, alpha = 0.25)
+```
+
+23. How does average arrival delay change as the number of flights a plane takes increases.
+
+More counts, less delay
+Less counts, more delay
+-> Average arrival delay decreases when the number of flights a plane takes increases.
+
+24. Re-create the scatter plot above but only consider planes that have flown at least 25 flights.
+
+```{r}
+not_cancelled %>% group_by(tailnum) %>%
+  summarise(avg_arr_delay = mean(arr_delay), n = n()) %>%
+  filter(n > 25) %>%
+  ggplot(aes(x = n, y = avg_arr_delay)) + geom_point(shape = 21, alpha = 0.25)
+```
+
+If we are drawing conclusions from the data we need to make sure we are basing them on a sufficient amount of data.
+

@@ -1,0 +1,283 @@
+---
+title: "Data Transformation - Part III"
+output:
+  html_document:
+    df_print: paged
+Name: THI NGOC DIEM NGUYEN
+ID: 0778061
+Week: 7
+---
+
+```{r set up, include=FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+## Load packages
+
+```{r warning = FALSE, message = FALSE}
+library(tidyverse)
+library(gapminder)
+library(nycflights13)
+```
+
+## The 'mutate' verb
+
+'mutate' allows us to create new variables or modify existing one.
+
+1. Create a new variable called 'GDP', which is the product of 'pop' and 'gdpPercap'. Check the data frame to make sure your new variable was created.
+
+```{r}
+GDP <- mutate(gapminder, GDP = pop * gdpPercap)
+GDP
+```
+
+2. Create another new variable called 'GDP_norm', which is the 'GDP' in billions of dollars. Check the data frame to make sure your new variable was created.
+
+```{r}
+GDP_norm <- mutate(GDP, GDP_norm = GDP / 1000000000 )
+GDP_norm
+```
+
+3. Modify the 'pop' variable so it expressed units of millions of people. Check the data frame to make sure that the 'pop' variable was modified.
+
+```{r}
+mutate(gapminder, pop = pop / 1000000 )
+```
+
+## The 'transmute' verb
+
+This verb allows you to create new variables but removes the existing ones.
+
+4. Use 'transmute' to create a 'population' variable measured in units of millions of people. Check that the 'population' variable was created and that the other variables were removed.
+
+```{r}
+transmute(gapminder, population = pop)
+```
+
+## Rename
+
+This verb allows you to rename variables.
+
+Compare the columns in
+
+```{r}
+mutate(gapminder, population = pop)
+```
+
+to the columns in
+
+```{r}
+rename(gapminder, population = pop)
+gapminder
+```
+
+## The 'arrange' verb
+
+This verb allows you to reorder the rows of your data frame.
+
+5. Reorder the rows in increasing order based on 'lifeExp'.
+
+```{r}
+arrange(gapminder, lifeExp)
+```
+
+6. See if you can reorder based on 'gdpPercap' but in decreasing order.
+
+```{r}
+arrange(gapminder, desc(gdpPercap))
+```
+
+7. Can you use this function to reorder based on 'year' and 'pop'? What happens if you reverse the order of the variables?
+
+```{r}
+arrange(gapminder, year, pop)
+```
+
+```{r}
+arrange(gapminder, pop, year)
+```
+-> The order depends on what column we are putting first in the chunk.
+
+## Using the 'nycflights13' data:
+
+# Install a New Package
+
+```{r eval=FALSE}
+install.packages('nycflights13')
+```
+
+# Load Packages
+
+```{r warning = FALSE, message = FALSE}
+library(nycflights13)
+flights
+```
+
+8. Sort flights to find the most delayed flights.
+
+```{r}
+arrange(flights, desc(dep_delay))
+```
+
+9. Find the flights that left earliest.
+
+```{r}
+arrange(flights, dep_delay)
+```
+
+10. Sort flights to find the fastest flights.
+
+```{r}
+arrange(flights, air_time)
+```
+
+11. Which travelled the shortest?
+
+```{r}
+arrange(flights, distance)
+```
+
+Which flights travelled the longest?
+
+```{r}
+arrange(flights, desc(distance))
+```
+
+## Section 5.5.2 Exercises
+
+```{r}
+name_of_function <- function(x) {}
+```
+
+12. Currently 'dep_time' and 'sched_dep_time' are convenient to look at, but hard to compute with because they’re not really continuous numbers. Convert them to a more convenient representation of number of minutes since midnight.
+
+consider the first value in 'dep_time': 517. This actually means 5:17, or 17 minutes after 5pm. if we do some modular arithmetic we can separate the hours from the minutes. We can then use these values to convert 'dep_time' to minutes from midnight.
+
+# Extract the hours:
+
+```{r}
+517 %/% 100
+```
+
+# Extract the minutes:
+
+```{r}
+517 %% 100
+```
+
+If we convert the hours to minutes and add both together we should get total minutes from midnight:
+
+```{r}
+(517 %/% 100) * 60 + (517 %% 100)
+```
+
+See how this works on our minimum and maximum values of 'dep_time':
+
+```{r warning = FALSE, message = FALSE}
+library(nycflights13)
+flights
+```
+
+```{r}
+summary(flights$dep_time)
+```
+
+Our minimum is 1, which represents 12:01 (one minute after midnight), so when we convert to minutes from midnight we should still have a value of 1:
+
+```{r}
+(1 %/% 100) * 60 + (1 %% 100)
+```
+
+Our maximum is 2400, which represents 12:00 (midnight), so when we convert to minutes from midnight we should get a value of 0:
+
+```{r}
+(2400 %/% 100) * 60 + (2400 %% 100)
+```
+
+We do not get 0. Since this is maximum value, we can do one more modular division to fix this issue:
+
+```{r}
+((2400 %/% 100) * 60 + (2400 %% 100)) %% 1440
+```
+
+```{r eval=FALSE}
+install.packages('nycflights13')
+```
+
+```{r warning = FALSE, message = FALSE}
+library(tidyverse)
+library(nycflights13)
+flights
+```
+
+We could use the above formula directly in a mutate statement.
+
+```{r}
+mutate(flights, dep_time_in_mins = ( (dep_time %/% 100) * 60 + (dep_time %% 100) ) %% 1440)
+```
+
+
+A better way is to use function:
+
+```{r}
+time_in_mins <- function(x) {((x %/% 100) * 60 + (x %% 100)) %% 1440}
+```
+
+Test new function with a few values:
+
+```{r}
+print(time_in_mins(1))
+print(time_in_mins(2400))
+print(time_in_mins(752))
+```
+
+Now we can re-write what we had above:
+
+```{r}
+mutate(flights, dep_time_in_mins = time_in_mins(dep_time))
+```
+
+13. Compare 'air_time' with 'arr_time' - 'dep_time'. What do you expect to see? What do you see? What do you need to do to fix it?
+
+It would be logical to assume that 'arr_time' - 'dep_time' = 'air_time'.
+
+Let's check:
+
+First, 'arr_time' and 'dep_time' need to be converted as we did in the previous question. Then we need to calculate the difference. Then we select only the columns of interest to make viewing simpler.
+
+calculate the difference between 'air_time' and our computed_air_time = 'arr_time' - 'dep_time'
+
+Plot a histogram of the differences (which we think should be 0)
+
+```{r}
+flights %>% mutate(arr_time = time_in_mins(arr_time), 
+                   dep_time = time_in_mins(dep_time), 
+                   computed_air_time = arr_time - dep_time,
+                   difference = air_time - computed_air_time) %>% 
+  ggplot(aes(x = difference)) + geom_histogram(colour = 'black', fill = 'lavender', binwidth = 50)
+```
+
+Possible issues could be:
+- time zones
+- arrival and departure are on different days
+- air_time does not include taxi and runway time
+
+14. Compare 'dep_time', 'sched_dep_time', and 'dep_delay'. How would you expect those three numbers to be related?
+
+Similar to above but assuming: 'dep_time' = 'sched_dep_time' + 'dep_delay'
+
+```{r}
+flights %>% mutate(dep_time = time_in_mins(dep_time), 
+                   sched_dep_time = time_in_mins(sched_dep_time),
+                   diff_sched_dep = (dep_time - dep_delay) - sched_dep_time) %>% 
+  ggplot(aes(x = diff_sched_dep)) + geom_histogram(colour = 'black', fill = 'lavender', binwidth = 50)
+```
+
+Possible issues could be:
+- There are some flights scheduled near midnight that get delayed and leave next day.
+
+
+
+
+
+
