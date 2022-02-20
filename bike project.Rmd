@@ -1,0 +1,211 @@
+---
+title: "DAB501 Pratice Final Project"
+output:
+  word_document: default
+  html_notebook: default
+  pdf_document: default
+---
+
+## Student Information
+
+- Name: THI NGOC DIEM NGUYEN
+- ID: 0778061
+- Serial Number : 
+
+
+## Instructions 
+
+Follow the instructions on the handout provided. 
+
+
+## Packages and Data
+
+```{r message=FALSE, warning=FALSE}
+library(broom)
+library(tidyverse)
+library(here)
+```
+
+```{r message=FALSE}
+# Replace the _____ with the correct file name and path
+bike <- read_csv ("C:\\Users\\emily\\OneDrive - St. Clair College\\Desktop\\DAB 501 FINAL PROJECT TNDN\\bike_final.csv")
+
+bike
+```
+
+## MODELING: First pair of variables
+
+```{r}
+ggplot(bike, aes(temp, count)) +
+  geom_point()
+```
+
+
+### Question 1: Identify the explanatory variable. 
+
+
+> **temp** is the explanatory variable
+
+### Question 2: Identify the response variable. 
+
+> **count** is the response variable
+
+### Question 3: Create a linear regression model and display the full output of the model. 
+
+```{r}
+mod_temp <- lm(count ~ temp, data = bike)
+summary(mod_temp)
+```
+
+### Question 4: Using the variables noted in #1 and #2 above and the results of #3, write the equation for your model. 
+
+$$
+\hat{\rm count} = 72.58\cdot {\rm temp} + 1054.94
+$$
+
+### Question 5: Explain what the intercept means in the context of the data. 
+
+> When 'temp = 0' we expect the number of bike rentals to be about 1054. 
+
+### Question 6: Is the intercept a useful/meaningful value in the context of our data? If yes, explain. If not, explain what purpose it serves. 
+
+> This intercept is most likely not meaningful in the context of this data because there is little chance that anyone would be renting bikes when the temperature is 0 degree. 
+> If there are people who rent bikes at this temperature, the number probably will not be predicted well from our model.
+
+### Question 7: Explain what the slope means in the context of the data. 
+
+> For every increase in temperature of 1 degree, we expect there to be about 72 more bike rentals on avearge. 
+
+```{r}
+ggplot(bike, aes(temp, count)) +
+  geom_point() +
+  geom_abline(slope = 72.58, intercept = 1054.94)
+```
+
+## MODELING: Second pair of variables
+
+```{r}
+ggplot(bike, aes(precipitation, count)) +
+  geom_point()
+```
+
+### Question 1: Identify the explanatory variable. 
+
+> **precipitation** is the explanatory variable
+
+### Question 2: Identify the response variable.
+
+> **count** is the response variable
+
+### Question 3: Create a linear regression model and display the full output of the model. 
+
+```{r}
+mod_precip <- lm(count ~ precipitation, data = bike)
+summary(mod_precip)
+```
+
+### Question 4: Using the variables noted in #1 and #2 above and the results of #3, write the equation for your model. 
+
+$$
+\hat{\rm count} = 42.414\cdot {\rm precipitation} + 2698.682
+$$
+
+### Question 5: Explain what the intercept means in the context of the data.
+
+> When 'precipitation = 0' we expect the number of bike rentals to be about 2698.
+
+### Question 6: Is the intercept a useful/meaningful value in the context of our data? If yes, explain. If not, explain what purpose it serves. 
+
+> This intercept is a meaningful value in the context of this data because it is reasonable that people would rent bikes when it is not snowing or raining. 
+
+### Question 7: Explain what the slope means in the context of the data.
+
+> For every increase in precipitation of 1 mm, we expect there to be about 42 more bike rentals on avearge. 
+
+```{r}
+ggplot(bike, aes(precipitation, count)) +
+  geom_point() +
+  geom_abline(slope = 42.414, intercept = 2698.682)
+```
+
+## MODEL ASSESSMENT
+
+### Question 1: Which metric can you use to choose between the two models you just created? 
+
+> We can use $R^2$ (or multiple $R^2$) to choose between the models we just created. 
+
+### Question 2: Explain what this metric means and why it is good for comparing models. 
+
+> $R^2$, the coefficient of determination, tells us the proportion of the variability in the *response* variable is accounted for by the regression model on the *explanatory* variable.
+
+> Thus, a model with higher $R^2$ value would account for more of the variability in our response variable and would do a better job when predicting the response variable, so should be a better model.
+
+### Question 3: According to this metric, which model is the best of the two you created? Why? 
+
+> Our model using 'temp' as the explanatory variable has $R^2 = 0.4114$ and the model using 'precipitation' as the explanatory variable has $R^2 = 0.1851$. Given the definition above, the model using 'temp' would account for more of the variability when predicting 'count' than the model using 'precipitation'. Thus, I will choose the model that uses 'temp' as the explanatory variable to be the best of the two.
+
+## MODEL DIAGNOSTICS
+
+NOTE: Even if you think your model fails one of the diagnostic tests, please provide an answer for ALL diagnostics.  Your answers below should contain three plots. 
+Now that you have chosen your best model, you need to determine if it is reliable or not:
+
+### Question 1: Create two new data columns based on your best model: predicted values for your response variable and the corresponding residuals. 
+
+```{r}
+bike_temp <- bike %>%
+  mutate(pred = 72.58*temp + 1054.94,
+         residuals = count - pred)
+bike_temp
+```
+
+**OR using the 'broom' package**
+
+```{r}
+bike_temp <- augment(mod_temp) %>%
+              select(count, temp,
+                     pred = .fitted,
+                     residuals = .resid)
+bike_temp
+```
+
+### Question 2: Create a plot to check the assumption of linearity. State whether or not this condition is met and explain your reasoning. 
+
+```{r}
+ggplot(bike_temp, aes(temp, residuals)) +
+  geom_point() +
+  geom_hline(yintercept = 0)
+```
+
+> There is no apparent pattern in the residuals plot above. There is a slight curve to the data but it doesn't produce a solid pattern. This means that a linear model is appropriate to describe the relationship betweens 'count' and 'temp', that is, the condition of "linearity" has been met.
+
+### Question 3: Create a plot to check the assumption of nearly normal residuals. State whether or not this condition is met and explain your reasoning. 
+
+```{r}
+ggplot(bike_temp, aes(residuals)) +
+  geom_histogram(colour = 'black', fill = 'lavender', binwidth = 750)
+```
+
+> Based on the histogram above, the distribution of the residuals is unimodal and has a slight right skew because the skew is only slight. This is the type of distribution we would expect to see if the residuals are randomly distributed about our best fit line. Thus, this condition is met.
+
+### Question 4: Create a plot to check the assumption of constant variability. State whether or not this condition is met and explain your reasoning. 
+
+```{r}
+ggplot(bike_temp, aes(temp, residuals)) +
+  geom_point() +
+  geom_hline(yintercept = 0) +
+  geom_hline(yintercept = 4000, colour = 'blue') +
+  geom_hline(yintercept = -4000, colour = 'blue')
+```
+
+> It seems that the variability increases with 'temp' to about 'temp = 45' and then decreases until about 'temp = 60' and then stays constant but follows a negative linear pattern. Thus, the condition is not met
+
+## CONCLUSION
+
+### Question 1: Based on the results of the “Model Diagnostics” section above, what can you conclude about your model? 
+
+> The 1st and 2nd condition have been met but the 3rd has not met so we cannot rely 100% on this model but it still worth to look at such kind of model to estimate 'count' on 'temp'. It's not a perfect relationship but it seems like it would do a good job in predicting `count'.
+
+
+
+
+
