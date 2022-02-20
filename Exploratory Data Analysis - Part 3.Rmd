@@ -1,0 +1,180 @@
+---
+title: "Exploratory Data Analysis - Part III"
+output:
+  html_document:
+    df_print: paged
+Name: THI NGOC DIEM NGUYEN
+ID: 0778061
+Week: 9
+---
+
+```{r set up, include=FALSE}
+#knitr::opts_chunk$set(eval = FALSE)
+```
+
+```{r}
+install.packages("GGally")
+```
+
+## Load necessary packages
+
+```{r warning = FALSE, message = FALSE}
+library(tidyverse)
+library(here)
+```
+
+## Load and clean the data
+
+```{r}
+wages <- read_csv("http://vincentarelbundock.github.io/Rdatasets/csv/Ecdat/Bwages.csv")
+```
+
+```{r}
+wages_clean <- wages %>% select(-X1, -sex) %>% 
+           mutate(educ = factor(educ)) 
+wages_clean
+```
+
+## Correlation
+
+Covariation is the tendency for the values of two or more (numeric) variables to vary together in a related way.
+
+The 'covariance' of two variables is defined as follows:
+
+$$
+cov(x, y) = \sum_{i = 1}^n \frac{(x_i - \bar{x})(y_i - \bar{y})}{n -1}
+$$
+
+In R we can calculate this value using the covariance function:
+
+The Pearson’s Correlation coefficient is a dimensionless measure of the dependency between the two variables:
+
+$$
+r_{xy} = \frac{cov(x, y)}{s_xs_y}
+$$
+
+In the above, sx and sy are the standard deviations of x and y, respectively. In R we can calculate the correlation coefficient using the correlation function:
+
+## Bivariate analysis
+
+We will now consider the variables in our data in pairs. The main goal here is to see if we can discover any relationship between variables. If we can, then that means knowing something about how one variable changes will give us information on how the other variable changes. To understand these possible correlations, we will need to describe the form, direction, and strength of the observed relationship along the following dimensions:
+
+form - is it linear or nonlinear
+direction - is it positive or negative
+strength
+qualitatively - use words to describe (should note variability)
+quantitatively - use the correlation coefficient
+
+### wage vs exper
+
+1. Create a scatter plot of 'wage' versus 'exper'. Be sure to adjust the 'alpha' parameter or choose a different shape to help with overplotting.
+
+```{r}
+ggplot(wages_clean, aes(x = exper, y = wage)) + 
+  geom_point(shape = 21, alpha = 1/3)
+```
+
+2. Determine the form, direction, and strength of the relationship.
+
+Let's reproduce the above plot but with a best fit line.
+
+```{r}
+ggplot(wages_clean, aes(x = exper, y = wage)) + 
+  geom_point(shape = 21, alpha = 1/3) + 
+  geom_smooth(method = 'lm', se=FALSE)
+```
+
+It appears that wage has a positive, linear relation to years of experience (or at least could potentially be modeled as such) but it appears to be somewhat of a weak relationship. It would have expected a stronger correlation based on general expectations of wages and years of experience.
+
+The correlation coefficient is:
+
+```{r}
+cor(wages$wage, wages$exper)
+```
+
+The value of the correlation coefficient is on the weaker side, confirming what we see in the plot.
+
+Although relatively weak, the relationship does show that, on average, as years of experience increases, we would expect an increase in wages.
+
+The variation in wages clearly increases as years of experience increases.
+
+The data includes all job types so that will explain the wide variation in wage as years of experience increases, since some jobs have a much stronger connection between wages and years of experience than others.
+
+### wage vs educ
+
+3. Create a boxplot of 'wage' versus 'educ'.
+
+```{r}
+ggplot(wages_clean, aes(x = educ, y = wage)) + 
+  geom_boxplot()
+```
+
+
+4. Determine the form, direction, and strength of the relationship by considering the median value.
+
+It appears that median wage is positively and linearly related to education level. We would expect this as normally the higher education level the more opportunity there is to earn higher wages.
+
+Also the distribution of wages is much more compact for education level 1 and seems to increase in variability with education level. This also makes sense as we would expect people in education level 1 to have more limited job options than those with education level 5.
+
+### exper vs educ
+
+5. Create a boxplot of 'exper' versus 'educ'.
+
+```{r}
+ggplot(wages_clean, aes(x = educ, y = exper)) + 
+  geom_boxplot()
+```
+
+6. Determine the form, direction, and strength of the relationship by considering the median value.
+
+There seems to be a negative relationship between education level and years of experience. The relationship appears to be linear across the first 4 'educ' levels and then flattens out. We expect to see this since people with higher education level will have been in school longer and have had less opportunity to accumulate years of experience compared with people in education level 1.
+
+Variability of the data seems fairly consistent across 'educ' levels with a slight increase for 'educ = 5'.
+
+### Multiple plots
+
+Our data set only has a few variables so it’s not difficult to plot all the pairs. It will get tedious if we have larger data sets, though.
+
+7. Use the 'ggpairs' function to plot all the bivariate plots for our wages data.
+
+```{r}
+library(GGally)
+ggpairs(wages)
+```
+
+```{r}
+library(GGally)
+ggpairs(wages_clean)
+```
+
+## Multivariate analysis
+
+Here we will begin to consider more than two variables at a time. We are looking for patterns in the data that may be hidden if we look at all of the data at the same time.
+
+8. Create a scatter plot of 'wage' vs 'exper' but this time map colour to the 'educ' variable. Describe any patterns that you see.
+
+```{r}
+ggplot(wages_clean, aes(x = exper, y = wage, colour = educ)) + 
+  geom_point(shape = 21) +
+  geom_smooth(method = 'lm')
+```
+
+We can see the education level in 5 different colors. As the experience + education increase, wages increases.
+
+9. Create a scatter plot of 'wage' vs 'exper' but this time facet
+on the 'educ' variable. Describe any patterns that you see.
+
+```{r}
+ggplot(wages, aes(x = exper, y = wage)) + 
+  geom_point(shape = 21, alpha = 1/3) +
+  facet_wrap(~educ) +
+  stat_smooth(method = 'lm')
+```
+
+Wages + experience not much change in level 1 of education.
+Among levels: 2, 3, 4 and 5, level 5 is where as experience increases, wages increase as well. It shows stronger relationship than in level 1.
+Trend: higher level of education, higher level of experience, higher wages rate.
+
+
+
+
