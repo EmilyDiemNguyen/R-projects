@@ -1,0 +1,441 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+Name: Thi Ngoc Diem Nguyen
+ID: 0778061
+Week: 6
+Lab: 1
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+## Load Packages
+
+```{r warning = FALSE, message = FALSE}
+library(tidyverse)
+library(gapminder)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+## Subsetting data frames
+
+### Selecting rows and columns
+
+1. Take an initial look at the 'gapminder' data frame.
+
+```{r}
+gapminder
+```
+
+To select a single column we can use the '$' notation: 'data_frame$column_name'.
+
+2. Use the '$' notation to select the 'pop' column of the 'gapminder' data frame.
+
+```{r}
+gapminder$pop
+```
+
+Another way to subset data frames is to use bracket notation: data_frame[ row_number, 'column_name']. If we leave out the row_number, all rows will be selected. If we leave out 'column_name', then all columns will be selected.
+
+3. Try using bracket notation to select the pop column.
+
+```{r}
+gapminder[ , 'pop']
+```
+
+How we select the data will determine what data type the result is.
+
+4. Use the class() function to compare the data types returned in Exercise 2 and Exercise 3.
+
+```{r}
+print(class(gapminder$pop))
+print(class(gapminder[ , 'pop']))
+```
+
+5. What is the 'gdpPercap' listed in the 100th row?
+
+```{r}
+gapminder[ 100, 'gdpPercap']
+```
+
+6. What data type is returned in Exercise 5?
+
+```{r}
+class(gapminder[ 100, 'gdpPercap'])
+```
+
+7. Which country’s data is stored in the 10,000th row?
+
+```{r}
+gapminder[10000, ]
+```
+
+8. As you can see from Exercise 7, we need to be careful when subsetting as the results will not always be what we want.
+
+9. What is the value of 'lifeExp' in the 172nd row?
+
+```{r}
+gapminder[172, 'lifeExp']
+```
+
+### Selecting multiple rows and columns
+
+We may be interested in more than one column. If so, we can use the something like data_frame[ row_number, c('column_name_1', 'column_name_2')]
+
+10. Use this approach to select both the year and pop columns.
+
+```{r}
+gapminder[ , c('year', 'pop')]
+```
+
+We may be interested in more than one row. If so, we can use the something like data_frame[ c(row_number_1, row_number_2), ].
+
+11. Use this approach to select the first 5 rows.
+
+```{r}
+gapminder[ c(1, 2, 3, 4, 5), ]
+```
+
+12. Try Exercise 11 using shorthand notation: 1:5. (Note: seq(1, 5) should also work).
+
+```{r}
+gapminder[1:5, ]
+```
+
+13. See if you can select the 1st, 12th, and 38th rows of the country, year, and lifeExp columns.
+
+```{r}
+gapminder[c(1, 12, 38), c('country', 'year', 'lifeExp')]
+```
+
+## Interlude: the pipe %>% operator
+
+Before we dive into the dplyr verbs for data transformation, I want to bring your attention to the pipe operator, %>%. You have seen this a couple times in previous class work and soon we will make liberal use of it. For now, I just want to demonstrate how it works.
+
+The definition is as follows: f(x, y) = x %>% f(y).
+
+And here is an example of the f(x, y) form:
+
+```{r}
+select(gapminder, pop)
+```
+
+And here is the equivalent result using the x %>% f(y) form:
+
+```{r}
+gapminder %>% select(pop)
+```
+
+When we start doing many transformations, it will be easier to see the benefit of the pipe operator, as it makes reading the code a lot more like reading a regular English sentence.
+
+Shortcut key for %>% is Shift+Ctrl+-
+
+## dplyr verbs
+
+The main dplyr verbs all act in a similar manner:
+
+the first argument is a data frame
+the remaining arguments describe the transformation
+the result is a data frame
+Let’s take a look at the data again.
+
+```{r}
+gapminder
+```
+
+### The select verb
+
+The 'select' verb allows us to select by name (and without quotation marks) the columns/variables of interest. Use the following structure: 'select(data_frame, column_name_1, column_name_2)'.
+
+14. Select the 'pop' column.
+
+```{r}
+select(gapminder, pop)
+```
+
+15. Select the 'continent', 'year' and 'pop' columns.
+
+```{r}
+select(gapminder, continent, year, pop)
+```
+
+If you don’t know the column names, you can use 'colnames(data_frame)'.
+
+To remove a column, you can use a negative sign: 'select(data_frame, -column_name_1)'.
+
+16. Remove the country column.
+
+```{r}
+select(gapminder, -country)
+```
+
+For consecutive columns you can select using the : notation: select(data_frame, column_name_1:column_name_3)
+
+17. Select 'country' throuhg ''pop'.
+
+```{r}
+select(gapminder, country:pop)
+```
+
+To remove consecutive columns you can also use the : notation: select(data_frame, -(column_name_1:column_name_3))
+
+We can also select and reorder columns:
+
+```{r}
+select(gapminder, year, country, pop)
+```
+
+#### Special functions for select
+
+select has a few special functions that can help make it easier to select only the columns of interest.
+
+Move one column to the first position and keep all other columns:
+
+```{r}
+select(gapminder, gdpPercap, everything())
+```
+
+Select only those columns that start with particular characters:
+
+```{r}
+select(gapminder, starts_with('c'))
+```
+
+Or end with particular characters:
+
+```{r}
+select(gapminder, ends_with('p'))
+```
+
+Or contain particular characters:
+
+```{r}
+select(gapminder, contains('Exp'))
+```
+
+18. Is the 'contains' special function case sensitive? Does it matter?
+
+The 'contains' function case is not sensitive. This is helpful because we can use 'exp' to catch all variations in stead of having to 'EXP', 'Exp'... it will give same result.
+
+```{r}
+select(gapminder, contains('exp'))
+```
+
+19. Rewrite the last 3 lines of code using the %>% operator. Make sure you get the same results as above.
+
+```{r}
+gapminder %>% select(starts_with('c'))
+gapminder %>% select(ends_with('p'))
+gapminder %>% select(contains('Exp'))
+```
+
+### The filter verb
+
+The filter verb allows us to choose which observations/rows are of interest to us. filter takes a data frame and a condition and filters out all observations that do not satisfy the condition.
+
+The basic form is: filter(data_frame, condition).
+
+Here is an example:
+
+```{r}
+filter(gapminder, continent == 'Europe')
+```
+
+20. Try keeping only the rows corresponding to 1967.
+
+```{r}
+filter(gapminder, year == 1967)
+```
+
+#### Comparison operators
+
+The following comparison operators are useful inside filter:
+
+==, equivalent
+!=, not equivalent
+>, greater than
+<, less than
+>=, greater than or equal to
+<=, less than of equal to
+
+21. Find all rows where 'lifeExp' is greater than or equal to 80
+
+```{r}
+filter(gapminder, lifeExp >= 80)
+```
+
+#### Logical operators
+
+We can also you the following logical operators to combine multiple conditions:
+
+& - the AND operator
+| - the OR operator
+
+When combining 2 conditions with the AND (&) operator the following table summarizes the possible results:
+
+Condition 1	Condition 2	Result
+TRUE	TRUE	TRUE
+TRUE	FALSE	FALSE
+FALSE	TRUE	FALSE
+FALSE	FALSE	FALSE
+
+When filtering your data, this means that when you use condition_1 & condition_2 you will only see the rows where both of these conditions are TRUE.
+
+When combining 2 conditions with the OR (|) operator the following table summarizes the possible results:
+
+Condition 1	Condition 2	Result
+TRUE	TRUE	TRUE
+TRUE	FALSE	TRUE
+FALSE	TRUE	TRUE
+FALSE	FALSE	FALSE
+
+When filtering your data, this means that when you use condition_1 | condition_2 you will see the rows where either condition is TRUE.
+
+22. Find all rows where the 'year' is greater than 1967 and 'gdpPercap' is less than 4000.
+
+```{r}
+filter(gapminder, year > 1967 & gdpPercap < 4000)
+```
+
+23. Find all rows where the 'population' is less than 500,000 or greater than 1,000,000,000.
+
+```{r}
+filter(gapminder, pop < 500000 | pop > 1000000000)
+```
+
+24. Find all places in Europe with a life expectancy greater than or equal to 78 and a population less than 1,000,000 OR the population is greater than 1,200,000,000.
+
+```{r}
+filter(gapminder, (continent == 'Europe' & lifeExp >= 78 & pop < 1000000) | (pop > 1200000000))
+```
+
+In theory, we can combine any number of conditions. We can see from Exercise 24, though, that many conditions can make it difficult to see what is happening. In practice, we would start creating new variables to represent some of the conditions and then use a smaller number of conditions on the new variables. We’ll learn how to create new variables in the next lab.
+
+## Saving your results
+
+We have been using 'select' and 'filter' to focus in on only the portions of our data frame that are of interest to us at the moment. If we want to access the same subsets of our data later we will need to save the results to a variable.
+
+If we run 'filter(gapminder, country == 'Canada')' we will see a data frame printed to the screen, but no new variable will appear in our ‘environment’ pane at the top right of RStudio. That means, if we want to access this data again, we will have to retype the same code.
+
+If, however, we run 'canada <- filter(gapminder, country == 'Canada')' we will see that no results get printed but a new variable called canada will appear in our environment.
+
+25. Run some code using ''select' or 'filter' but this time assign it to a variable name. Check that the new variable appears in the environment pane. Also check that when you type this variable in a code chunk that you see the correct output.
+
+```{r}
+filter(gapminder, country == 'Canada')
+```
+
+```{r}
+canada <- filter(gapminder, country == 'Canada')
+```
+
+```{r}
+canada
+```
+
+Another example:
+
+```{r}
+longevity <- filter(gapminder, lifeExp >= 80)
+```
+
+```{r}
+longevity
+```
+
+-> The new variable appears in the environment pane. 
+-> When we type this variable in a code chunk, we can see the same output.
+
+Sometimes we will want to save our results to a variable.
+
+Sometimes, though, these are temporary results that we just want to pass along to the next step of our analysis and don’t want to save them.
+
+## Piping in practice
+
+Let’s say we are only interested in Canada’s GDP per capita from 2000 onward. We’ll now consider a few ways of getting at this information.
+
+### Using temporary data frames
+
+First use 'filter' so we only see rows of data concerning Canada:
+
+```{r}
+canada <- filter(gapminder, country == 'Canada')
+```
+
+Now use 'select' to choose the variables of interest:
+
+```{r}
+canada_gdp <- select(canada, country, gdpPercap)
+```
+
+We get the result we want but have had to create a temporary data frame that we don’t really need.
+
+### Combining code
+
+We could also just combine the code into a one-liner:
+
+```{r}
+canada_gdp <- select(filter(gapminder, country == 'Canada'), country, gdpPercap)
+```
+
+We get the result we want but now the code is getting hard to read.
+
+### Using pipes
+
+We can also use the pipe operator to do this:
+
+```{r}
+canada_gdp <- gapminder %>% 
+                filter(country == 'Canada') %>% 
+                select(country, gdpPercap)
+```
+
+We get the result we want but now we have not had to save a temporary data frame, nor do we have code that is hard to read.
+
+This is a much cleaner way of carry out an analysis. Our example only included two steps. The benefits of the pipe operator become much more apparent if you have, say, 10 steps in a process.
+
+26. Practice using the %>% operator by rewriting some of your earlier code.
+
+```{r}
+longevity <- filter(gapminder, lifeExp >= 80)
+```
+
+```{r}
+longevity_pop <- select(longevity, lifeExp, pop)
+```
+
+```{r}
+longevity_pop <- select(filter(gapminder, lifeExp >= 80), lifeExp, pop)
+```
+
+```{r}
+longevity_pop <- gapminder %>% 
+                filter(lifeExp >= 80) %>% 
+                select(lifeExp, pop)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

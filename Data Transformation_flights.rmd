@@ -1,0 +1,262 @@
+---
+title: "Data Transformation - Part II"
+output:
+  html_document:
+    df_print: paged
+Name: Thi Ngoc Diem Nguyen
+Student ID: 0778061
+Week: 6
+Lab: 2
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r set up, include=FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+## Install a New Package
+
+```{r eval=FALSE}
+install.packages('nycflights13')
+```
+
+## Load Packages
+
+```{r warning = FALSE, message = FALSE}
+library(tidyverse)
+library(nycflights13)
+flights
+```
+
+## Some useful functions
+
+### 'unique'
+
+Returns the unique values of a variable.
+
+```{r}
+unique(flights$carrier)
+```
+
+### 'sort'
+
+Order the values of a variable.
+
+```{r}
+sort(unique(flights$carrier))
+```
+
+### %in%
+
+Check for membership in a vector.
+
+```{r}
+filter(flights, dep_time %in% c(517, 533))
+```
+
+1. Check out sum(), max(), min(), and length().
+
+```{r}
+sum(flights$day)
+```
+
+```{r}
+max(flights$day)
+```
+
+```{r}
+min(flights$day)
+```
+
+```{r}
+length(flights$day)
+```
+
+## Missing data
+
+Missing data in R is represented as 'NA'; the data is not available. Data can be missing for a variety of reasons. Sometimes the data was just never there. Other times it could be the result of an error.
+
+One problem with NA’s is that they propagate.
+
+### Operations with 'NA'
+
+If we have missing data and try to do basic operations, the result will be 'NA'. Here are some examples.
+
+```{r}
+NA > 5
+```
+
+```{r}
+NA == 10
+```
+
+```{r}
+NA + 10
+```
+
+```{r}
+NA / 2
+```
+
+```{r}
+NA == NA
+```
+
+The last comparison may be easier to understand if it is stated as follows:
+
+```{r}
+x <- NA  # Let x represent Joseph's age
+y <- NA  # Let y represent Sally's age
+x == y   # determine if Joseph's age equals Sally's age
+```
+
+### Is a value NA?
+
+A useful function for determining if a variable is 'NA' is
+
+```{r}
+is.na(x)
+```
+
+We can also use this to check each element of a vector.
+
+```{r}
+z <- c(1, 3, NA, 4, NA, 5)
+is.na(z)
+```
+
+It is also sometimes useful to use the 'NOT' operator '!' in conjunction with 'is.na()'. '!TRUE = FALSE' and '!FALSE = TRUE'.
+
+```{r}
+!is.na(z)
+```
+
+Since, under the hood, 'TRUE = 1' and 'FALSE = 0', this provides an easy way of counting NA’s:
+
+```{r}
+sum(is.na(z))
+```
+
+Or we could use it to get the proportion of missing values in a vector (or data frame column).
+
+```{r}
+prop_na <- sum(is.na(z))/length(z)
+prop_na
+```
+
+'summary' will also give you counts of missing values.
+
+2. Use 'summary' to see if the 'flights' data frame contains any missing values.
+
+```{r}
+summary(flights)
+```
+
+### Removing NA’s
+
+Many functions in R allow you to explicitly remove missing data before carrying out their operations.
+
+Compare
+
+```{r}
+sum(z)
+```
+
+to the output of
+
+```{r}
+sum(z, na.rm = TRUE)
+```
+
+Now let’s get back to practicing with the 'dplyr' verbs. Here we’ll start answering specific questions using the 'filter' function.
+
+## Section 5.2.4 Exercises
+
+3. Find all flights that had an arrival delay of two or more hours
+
+```{r}
+flights %>% filter(arr_delay >= 120)
+```
+
+4. Find all flights that flew to Houston (IAH or HOU).
+
+```{r}
+flights %>% filter(dest == 'IAH' | dest == 'HOU')
+```
+OR we can also use:
+
+```{r}
+flights %>% filter(dest %in% c('IAH', 'HOU'))
+```
+
+5. Find all flights that were operated by United, American, or Delta.
+
+Get airline codes
+
+```{r}
+airlines
+```
+
+```{r}
+flights %>% filter(carrier %in% c('UA', 'AA', 'DL'))
+```
+
+6. Find all flights that departed in summer (July, August, and September).
+
+```{r}
+flights %>% filter(month %in% c(7, 8, 9))
+```
+Check that results have only these values for month.
+
+```{r}
+summer_flights <- flights %>% filter(month %in% c(7, 8, 9))
+unique(summer_flights$month)
+```
+
+7. Find all flights that arrived more than two hours late, but didn’t leave late.
+
+```{r}
+flights %>% filter(arr_delay > 120 &  dep_delay <= 0)
+```
+
+8. Find all flights that were delayed by at least an hour, but made up over 30 minutes in flight.
+
+```{r}
+flights %>% filter(dep_delay >= 60 &  (dep_delay - arr_delay) > 30)
+```
+
+9. Find all flights that departed between midnight and 6am (inclusive).
+
+```{r}
+max(flights$dep_time, na.rm = TRUE)
+```
+
+```{r}
+min(flights$dep_time, na.rm = TRUE)
+```
+
+```{r}
+flights %>% filter(dep_time <= 600 |  dep_time == 2400)
+```
+
+10. How many flights have a missing 'dep_time'? What other variables are missing? What might these rows represent?
+
+```{r}
+filter(flights, is.na(dep_time))
+```
+
+```{r}
+summary(flights)
+```
+
+-> The rows with missing data are most likely canceled flights.
+
